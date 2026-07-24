@@ -3,6 +3,8 @@ name: Export Lean 4.30 toolchain
 on:
   push:
     branches: [agent/lean-4.30-transfer]
+  pull_request:
+    branches: [main]
   workflow_dispatch:
 
 permissions:
