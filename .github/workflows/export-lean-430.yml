@@ -1,0 +1,51 @@
+name: Export Lean 4.30 toolchain
+
+on:
+  push:
+    branches: [agent/lean-4.30-transfer]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Download and split
+        shell: bash
+        run: |
+          set -euxo pipefail
+          curl --fail --location --retry 5 --retry-all-errors --output lean.tar.zst https://releases.lean-lang.org/lean4/v4.30.0/lean-4.30.0-linux.tar.zst
+          sha256sum lean.tar.zst | tee SHA256SUMS
+          stat -c '%s %n' lean.tar.zst | tee SIZE
+          split --bytes=240M --numeric-suffixes=0 --suffix-length=2 lean.tar.zst lean.tar.zst.part
+          ls -lh lean.tar.zst.part*
+      - uses: actions/upload-artifact@v4
+        with:
+          name: lean-4.30.0-linux-part00
+          path: lean.tar.zst.part00
+          compression-level: 0
+          retention-days: 7
+      - uses: actions/upload-artifact@v4
+        with:
+          name: lean-4.30.0-linux-part01
+          path: lean.tar.zst.part01
+          compression-level: 0
+          retention-days: 7
+      - uses: actions/upload-artifact@v4
+        with:
+          name: lean-4.30.0-linux-part02
+          path: lean.tar.zst.part02
+          compression-level: 0
+          retention-days: 7
+      - uses: actions/upload-artifact@v4
+        with:
+          name: lean-4.30.0-linux-manifest
+          path: |
+            SHA256SUMS
+            SIZE
+          retention-days: 7
